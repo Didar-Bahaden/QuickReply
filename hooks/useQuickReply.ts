@@ -5,11 +5,35 @@ import { INITIAL_SNIPPETS, INITIAL_CATEGORIES } from '../lib/constants';
 export function useQuickReply() {
   const [snippets, setSnippets] = useState<Snippet[]>(INITIAL_SNIPPETS);
   const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(['All']);
   const [searchQuery, setSearchQuery] = useState('');
   
   // UI states
   const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        queueMicrotask(() => {
+          setTheme('dark');
+        });
+      }
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    if (nextTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
   const [showSplash, setShowSplash] = useState(true);
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
   const [copiedSnippetId, setCopiedSnippetId] = useState<number | null>(null);
@@ -170,7 +194,7 @@ export function useQuickReply() {
   // Filter and sort snippets based on Category + Search Term + Sort Criteria
   const filteredSnippets = useMemo(() => {
     const filtered = snippets.filter((snippet) => {
-      const matchesCategory = selectedCategory === 'All' || snippet.category === selectedCategory;
+      const matchesCategory = selectedCategories.includes('All') || selectedCategories.includes(snippet.category);
       const matchesSearch = 
         snippet.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         snippet.body.toLowerCase().includes(searchQuery.toLowerCase());
@@ -181,7 +205,7 @@ export function useQuickReply() {
       return [...filtered].sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
     }
     return filtered;
-  }, [snippets, selectedCategory, searchQuery, sortBy]);
+  }, [snippets, selectedCategories, searchQuery, sortBy]);
 
   // Compute item counts for the category tabs
   const categoryCounts = useMemo(() => {
@@ -345,9 +369,9 @@ export function useQuickReply() {
   };
 
   // Open bottom sheet for fresh layout
-  const handleOpenAdd = () => {
+  const handleOpenAdd = (defaultTitle?: any) => {
     setEditingSnippet(null);
-    setFormTitle('');
+    setFormTitle(typeof defaultTitle === 'string' ? defaultTitle : '');
     setFormCategory('General');
     setFormBody('');
     setIsBottomSheetOpen(true);
@@ -413,19 +437,36 @@ export function useQuickReply() {
     return false;
   };
 
+  const handleToggleCategory = (categoryName: string) => {
+    if (categoryName === 'All') {
+      setSelectedCategories(['All']);
+    } else {
+      setSelectedCategories(prev => {
+        const next = prev.filter(c => c !== 'All');
+        if (next.includes(categoryName)) {
+          const filtered = next.filter(c => c !== categoryName);
+          return filtered.length === 0 ? ['All'] : filtered;
+        } else {
+          return [...next, categoryName];
+        }
+      });
+    }
+  };
+
   const handleDeleteCategory = (name: string) => {
     setCategories(prev => prev.filter(c => c.name !== name));
     triggerToast('Category deleted');
-    if (selectedCategory === name) {
-      setSelectedCategory('All');
-    }
+    setSelectedCategories(prev => {
+      const next = prev.filter(c => c !== name);
+      return next.length === 0 ? ['All'] : next;
+    });
   };
 
   return {
     snippets,
     categories,
-    selectedCategory,
-    setSelectedCategory,
+    selectedCategories,
+    toggleCategory: handleToggleCategory,
     searchQuery,
     setSearchQuery,
     mounted,
@@ -474,6 +515,8 @@ export function useQuickReply() {
     setIsVariableModalOpen,
     activeVariableSnippet,
     variableKeys,
-    handleCopyVariableFilled
+    handleCopyVariableFilled,
+    theme,
+    toggleTheme
   };
 }
