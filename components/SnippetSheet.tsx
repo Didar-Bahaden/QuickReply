@@ -73,11 +73,15 @@ export function SnippetSheet({
             <input
               type="text"
               required
+              maxLength={100}
               placeholder="e.g. Return Policy Overview"
               value={formTitle}
               onChange={(e) => setFormTitle(e.target.value)}
               className="w-full p-3.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#0F172A] text-[15px] text-[#1F2937] dark:text-[#F3F4F6] outline-none focus:border-[#FF4D3D] focus:ring-[3px] focus:ring-[#FF4D3D]/10 transition-colors shadow-sm font-['Nunito_Sans',sans-serif]"
             />
+            <span className={`text-[11px] font-bold mt-0.5 text-right block ${
+              formTitle.length >= 90 ? 'text-[#FF4D3D]' : 'text-gray-400 dark:text-gray-500'
+            }`}>{formTitle.length}/100</span>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -126,11 +130,15 @@ export function SnippetSheet({
             <textarea
               required
               rows={4}
+              maxLength={2000}
               placeholder="Paste or write the response sent to customers..."
               value={formBody}
               onChange={(e) => setFormBody(e.target.value)}
               className="w-full p-3.5 rounded-xl border border-[#E5E7EB] dark:border-[#334155] bg-white dark:bg-[#0F172A] text-[15px] text-[#1F2937] dark:text-[#F3F4F6] outline-none focus:border-[#FF4D3D] focus:ring-[3px] focus:ring-[#FF4D3D]/10 transition-colors shadow-sm resize-none leading-relaxed font-['Nunito_Sans',sans-serif]"
             />
+            <span className={`text-[11px] font-bold mt-0.5 text-right block ${
+              formBody.length >= 1800 ? 'text-[#FF4D3D]' : 'text-gray-400 dark:text-gray-500'
+            }`}>{formBody.length}/2000</span>
           </div>
 
           <button

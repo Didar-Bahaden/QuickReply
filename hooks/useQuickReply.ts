@@ -233,6 +233,15 @@ export function useQuickReply() {
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Guard: reject files larger than 1MB to prevent localStorage overflow
+    const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
+    if (file.size > MAX_FILE_SIZE) {
+      triggerToast('Import failed: file exceeds 1MB limit');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
@@ -281,9 +290,9 @@ export function useQuickReply() {
     try {
       const dataStr = JSON.stringify({ snippets, categories });
       const encoded = btoa(unescape(encodeURIComponent(dataStr)));
-      const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
+      const url = `${window.location.origin}${window.location.pathname}?data=${encodeURIComponent(encoded)}`;
       navigator.clipboard.writeText(url);
-      triggerToast('Share link copied to clipboard!');
+      triggerToast('Link copied — anyone with this link can read your snippets');
     } catch(err) {
       triggerToast('Failed to generate link');
     }
@@ -295,7 +304,7 @@ export function useQuickReply() {
       const cat = categories.find(c => c.name === snippet.category) || { name: snippet.category, emoji: '🏷️' };
       const dataStr = JSON.stringify({ snippets: [snippet], categories: [cat] });
       const encoded = btoa(unescape(encodeURIComponent(dataStr)));
-      const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
+      const url = `${window.location.origin}${window.location.pathname}?data=${encodeURIComponent(encoded)}`;
       navigator.clipboard.writeText(url);
       triggerToast('Snippet link copied!');
     } catch(err) {

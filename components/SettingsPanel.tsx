@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, LinkedinLogo, DownloadSimple, UploadSimple, Link, CaretRight, Tag } from '@phosphor-icons/react';
+import { X, LinkedinLogo, DownloadSimple, UploadSimple, Link, CaretRight, Tag, Warning } from '@phosphor-icons/react';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -121,6 +121,14 @@ export function SettingsPanel({
                       Copy Shareable Link
                     </div>
                   </button>
+                </div>
+
+                {/* Security notice */}
+                <div className="mt-3 flex gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+                  <Warning weight="fill" size={16} className="text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <p className="text-[11.5px] text-amber-700 dark:text-amber-300 leading-relaxed m-0 font-['Nunito_Sans',sans-serif]">
+                    <strong className="font-extrabold">Data is stored locally and unencrypted.</strong> Avoid saving passwords, PINs, or personal credentials as snippets. Share links are readable by anyone who receives them.
+                  </p>
                 </div>
               </section>
 
