@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Plus, MagnifyingGlass, X, Clock, TrendUp, CaretDown } from '@phosphor-icons/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Plus, MagnifyingGlass, X, Clock, TrendUp, CaretDown, Tag, CaretRight, DownloadSimple, UploadSimple, Link, Target } from '@phosphor-icons/react';
 import { useQuickReply } from '../hooks/useQuickReply';
 import { SplashScreen } from '../components/SplashScreen';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -13,6 +14,7 @@ import { CategoryManager } from '../components/CategoryManager';
 import { AboutGoalsModal } from '../components/AboutGoalsModal';
 import { Toast } from '../components/Toast';
 import { VariableFillModal } from '../components/VariableFillModal';
+import { getCategoryIcon } from '../lib/icons';
 
 export default function QuickReply() {
   const {
@@ -62,6 +64,7 @@ export default function QuickReply() {
     getCategoryEmoji,
     handleAddCategory,
     handleDeleteCategory,
+    handleReorderCategories,
     sortBy,
     setSortBy,
     isVariableModalOpen,
@@ -196,10 +199,16 @@ export default function QuickReply() {
           <aside className="hidden lg:flex flex-col w-[280px] gap-4 shrink-0 overflow-hidden">
             
             {/* Container 1: Filter Container */}
-            <div className="bg-white dark:bg-[#1E293B] border border-[#EEEDF2] dark:border-[#334155] rounded-2xl p-6 flex-1 flex flex-col overflow-hidden justify-between">
+            <motion.div
+              layout
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              className={`bg-white dark:bg-[#1E293B] border border-[#EEEDF2] dark:border-[#334155] rounded-2xl p-6 flex flex-col overflow-hidden ${
+                isCategoriesExpanded ? 'flex-1' : 'shrink-0'
+              }`}
+            >
               
               {/* Sort Filter Section */}
-              <div className="mb-6 shrink-0">
+              <motion.div layout className="mb-6 shrink-0">
                 <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block mb-3">
                   Sort By
                 </label>
@@ -227,11 +236,19 @@ export default function QuickReply() {
                     Most Used
                   </button>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Category Filter Section */}
-              <div className="flex-1 flex flex-col min-h-0">
-                <div className="flex justify-between items-center select-none cursor-pointer mb-4" onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}>
+              <motion.div
+                layout
+                transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                className={`flex flex-col min-h-0 ${isCategoriesExpanded ? 'flex-1' : 'shrink-0'}`}
+              >
+                <motion.div
+                  layout
+                  className="flex justify-between items-center select-none cursor-pointer mb-4"
+                  onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
+                >
                   <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block cursor-pointer">
                     Categories
                   </label>
@@ -242,93 +259,117 @@ export default function QuickReply() {
                   >
                     <CaretDown weight="bold" size={14} className={`transform transition-transform duration-200 ${isCategoriesExpanded ? 'rotate-180' : ''}`} />
                   </button>
-                </div>
+                </motion.div>
 
-                <div className={`flex-1 overflow-y-auto no-scrollbar transition-all duration-300 ${isCategoriesExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none invisible h-0'}`}>
-                  <div className="flex flex-col gap-1.5 pb-2">
-                    
-                    <button
-                      onClick={() => toggleCategory('All')}
-                      className={`group flex items-center justify-between w-full px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 border ${
-                        selectedCategories.includes('All')
-                          ? 'bg-red-50 dark:bg-red-500/10 text-[#FF4D3D] border-[#FF4D3D]/20 shadow-sm'
-                          : 'text-[#4B5563] dark:text-[#D1D5DB] hover:bg-gray-50 dark:hover:bg-[#334155] border-transparent'
-                      }`}
+                <AnimatePresence initial={false}>
+                  {isCategoriesExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                      className="overflow-hidden min-h-0 flex flex-col flex-1"
                     >
-                      <span className="flex items-center gap-3">
-                        <span className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 shrink-0 shadow-sm ${
-                          selectedCategories.includes('All')
-                            ? 'bg-gradient-to-br from-[#FF6B5C] to-[#FF4D3D] border-transparent shadow-[0_0_12px_rgba(255,77,61,0.5)] text-white'
-                            : 'bg-transparent border-gray-300 dark:border-gray-600 text-transparent group-hover:border-[#FF4D3D]/60 group-hover:shadow-[0_0_8px_rgba(255,77,61,0.3)]'
-                        }`}>
-                          {selectedCategories.includes('All') && (
-                            <span className="text-[11px] font-black">✓</span>
-                          )}
-                        </span>
-                        <span>💬 All</span>
-                      </span>
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all duration-200 ${
-                          selectedCategories.includes('All')
-                            ? 'bg-[#FF4D3D]/10 text-[#FF4D3D]'
-                            : 'bg-[#F3F4F6] dark:bg-[#334155] text-[#6B7280] dark:text-[#9CA3AF]'
-                        }`}
-                      >
-                        {categoryCounts['All'] || 0}
-                      </span>
-                    </button>
-
-                    {categories.map((category) => {
-                      const isActive = selectedCategories.includes(category.name);
-                      return (
-                        <button
-                          key={category.name}
-                          onClick={() => toggleCategory(category.name)}
-                          className={`group flex items-center justify-between w-full px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 border ${
-                            isActive
-                              ? 'bg-red-50 dark:bg-red-500/10 text-[#FF4D3D] border-[#FF4D3D]/20 shadow-sm'
-                              : 'text-[#4B5563] dark:text-[#D1D5DB] hover:bg-gray-50 dark:hover:bg-[#334155] border-transparent'
-                          }`}
-                        >
-                          <span className="flex items-center gap-3 truncate">
-                            <span className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 shrink-0 shadow-sm ${
-                              isActive
-                                ? 'bg-gradient-to-br from-[#FF6B5C] to-[#FF4D3D] border-transparent shadow-[0_0_12px_rgba(255,77,61,0.5)] text-white'
-                                : 'bg-transparent border-gray-300 dark:border-gray-600 text-transparent group-hover:border-[#FF4D3D]/60 group-hover:shadow-[0_0_8px_rgba(255,77,61,0.3)]'
-                            }`}>
-                              {isActive && (
-                                <span className="text-[11px] font-black">✓</span>
-                              )}
-                            </span>
-                            <span className="flex items-center gap-2 truncate">
-                              <span>{category.emoji}</span>
-                              <span className="truncate">{category.name}</span>
-                            </span>
-                          </span>
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 transition-all duration-200 ${
-                              isActive
-                                ? 'bg-[#FF4D3D]/10 text-[#FF4D3D]'
-                                : 'bg-[#F3F4F6] dark:bg-[#334155] text-[#6B7280] dark:text-[#9CA3AF]'
+                      <div className="flex-1 overflow-y-auto no-scrollbar pb-2 pt-0.5">
+                        <div className="flex flex-col gap-1.5">
+                          
+                          <button
+                            onClick={() => toggleCategory('All')}
+                            className={`group flex items-center justify-between w-full px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 border ${
+                              selectedCategories.includes('All')
+                                ? 'bg-red-50 dark:bg-red-500/10 text-[#FF4D3D] border-[#FF4D3D]/20 shadow-sm'
+                                : 'text-[#4B5563] dark:text-[#D1D5DB] hover:bg-gray-50 dark:hover:bg-[#334155] border-transparent'
                             }`}
                           >
-                            {categoryCounts[category.name] || 0}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
+                            <span className="flex items-center gap-3">
+                              <span className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 shrink-0 shadow-sm ${
+                                selectedCategories.includes('All')
+                                  ? 'bg-gradient-to-br from-[#FF6B5C] to-[#FF4D3D] border-transparent shadow-[0_0_12px_rgba(255,77,61,0.5)] text-white'
+                                  : 'bg-transparent border-gray-300 dark:border-gray-600 text-transparent group-hover:border-[#FF4D3D]/60 group-hover:shadow-[0_0_8px_rgba(255,77,61,0.3)]'
+                              }`}>
+                                {selectedCategories.includes('All') && (
+                                  <span className="text-[11px] font-black">✓</span>
+                                )}
+                              </span>
+                              <span className="flex items-center gap-2">
+                                {getCategoryIcon('💬', 'All', selectedCategories.includes('All') ? "text-[#FF4D3D]" : "text-gray-400 dark:text-gray-500 group-hover:text-[#FF4D3D] transition-colors duration-200", 18)}
+                                <span>All</span>
+                              </span>
+                            </span>
+                            <span
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all duration-200 ${
+                                selectedCategories.includes('All')
+                                  ? 'bg-[#FF4D3D]/10 text-[#FF4D3D]'
+                                  : 'bg-[#F3F4F6] dark:bg-[#334155] text-[#6B7280] dark:text-[#9CA3AF]'
+                              }`}
+                            >
+                              {categoryCounts['All'] || 0}
+                            </span>
+                          </button>
 
-              {/* Manage Categories Button (Always Visible at Bottom of Filter Container) */}
-              <button
+                          {categories.map((category) => {
+                            const isActive = selectedCategories.includes(category.name);
+                            return (
+                              <button
+                                key={category.name}
+                                onClick={() => toggleCategory(category.name)}
+                                className={`group flex items-center justify-between w-full px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 border ${
+                                  isActive
+                                    ? 'bg-red-50 dark:bg-red-500/10 text-[#FF4D3D] border-[#FF4D3D]/20 shadow-sm'
+                                    : 'text-[#4B5563] dark:text-[#D1D5DB] hover:bg-gray-50 dark:hover:bg-[#334155] border-transparent'
+                                }`}
+                              >
+                                <span className="flex items-center gap-3 truncate">
+                                  <span className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 shrink-0 shadow-sm ${
+                                    isActive
+                                      ? 'bg-gradient-to-br from-[#FF6B5C] to-[#FF4D3D] border-transparent shadow-[0_0_12px_rgba(255,77,61,0.5)] text-white'
+                                      : 'bg-transparent border-gray-300 dark:border-gray-600 text-transparent group-hover:border-[#FF4D3D]/60 group-hover:shadow-[0_0_8px_rgba(255,77,61,0.3)]'
+                                  }`}>
+                                    {isActive && (
+                                      <span className="text-[11px] font-black">✓</span>
+                                    )}
+                                  </span>
+                                  <span className="flex items-center gap-2 truncate">
+                                    {getCategoryIcon(category.emoji, category.name, isActive ? "text-[#FF4D3D]" : "text-gray-400 dark:text-gray-500 group-hover:text-[#FF4D3D] transition-colors duration-200", 18)}
+                                    <span className="truncate">{category.name}</span>
+                                  </span>
+                                </span>
+                                <span
+                                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 transition-all duration-200 ${
+                                    isActive
+                                      ? 'bg-[#FF4D3D]/10 text-[#FF4D3D]'
+                                      : 'bg-[#F3F4F6] dark:bg-[#334155] text-[#6B7280] dark:text-[#9CA3AF]'
+                                  }`}
+                                >
+                                  {categoryCounts[category.name] || 0}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Customize Categories Button (Always Visible at Bottom of Filter Container) */}
+              <motion.button
+                layout
                 onClick={() => setIsCategoryManagerOpen(true)}
-                className="flex items-center gap-2 w-full mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 shrink-0 font-bold text-sm text-[#FF4D3D] hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                className="group flex items-center justify-between w-full mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 shrink-0 font-bold text-sm text-[#FF4D3D] hover:text-[#E63E2E] dark:hover:text-[#FF6B5C] transition-colors duration-200"
               >
-                <span>🏷️</span> Manage Categories
-              </button>
-            </div>
+                <span className="flex items-center gap-2">
+                  <Tag weight="bold" size={16} className="text-[#FF4D3D] transition-transform duration-300 group-hover:rotate-12" />
+                  Customize Categories
+                </span>
+                <CaretRight 
+                  weight="bold" 
+                  size={16} 
+                  className="transform transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-1" 
+                />
+              </motion.button>
+            </motion.div>
             
             {/* Container 2: Workspace Storage Stats & Footer Actions */}
             <div className="bg-white dark:bg-[#1E293B] border border-[#EEEDF2] dark:border-[#334155] rounded-2xl p-6 shrink-0 flex flex-col gap-4">
@@ -364,7 +405,7 @@ export default function QuickReply() {
                     aria-label="Export Backup"
                     className="flex flex-col items-center justify-center p-2 bg-white dark:bg-[#1E293B] hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-[#334155] rounded-xl transition-all active:scale-95 shadow-sm"
                   >
-                    <span className="text-[15px]">📤</span>
+                    <DownloadSimple weight="bold" size={20} className="text-[#3B82F6] dark:text-[#60A5FA]" />
                     <span className="text-[9px] font-extrabold text-gray-500 dark:text-gray-400 mt-1">Export</span>
                   </button>
                   <label
@@ -372,7 +413,7 @@ export default function QuickReply() {
                     aria-label="Import Backup"
                     className="flex flex-col items-center justify-center p-2 bg-white dark:bg-[#1E293B] hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-[#334155] rounded-xl transition-all cursor-pointer active:scale-95 shadow-sm"
                   >
-                    <span className="text-[15px]">📥</span>
+                    <UploadSimple weight="bold" size={20} className="text-[#10B981] dark:text-[#34D399]" />
                     <span className="text-[9px] font-extrabold text-gray-500 dark:text-gray-400 mt-1">Import</span>
                     <input
                       type="file"
@@ -388,7 +429,7 @@ export default function QuickReply() {
                     aria-label="Share Workspace Link"
                     className="flex flex-col items-center justify-center p-2 bg-white dark:bg-[#1E293B] hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-[#334155] rounded-xl transition-all active:scale-95 shadow-sm"
                   >
-                    <span className="text-[15px]">🔗</span>
+                    <Link weight="bold" size={20} className="text-[#8B5CF6] dark:text-[#A78BFA]" />
                     <span className="text-[9px] font-extrabold text-gray-500 dark:text-gray-400 mt-1">Share</span>
                   </button>
                 </div>
@@ -405,13 +446,10 @@ export default function QuickReply() {
                   onClick={() => setIsAboutGoalsOpen(true)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-gray-50 dark:bg-[#1E293B]/40 border border-[#EEEDF2] dark:border-[#334155] rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800/40 transition-all text-xs font-bold text-[#1F2937] dark:text-[#F3F4F6]"
                 >
-                  🎯 Goals
+                  <Target weight="bold" size={14} className="text-[#FF4D3D]" /> Goals
                 </button>
               </div>
 
-              <div className="text-[10px] text-gray-400 dark:text-gray-500 text-center">
-                PWA by <strong>Didar</strong>
-              </div>
             </div>
           </aside>
 
@@ -448,7 +486,7 @@ export default function QuickReply() {
                     onShare={(e) => handleShareSnippet(e, snippet)}
                     onEdit={(e) => handleOpenEdit(e, snippet)}
                     onDelete={(e) => handleDelete(e, snippet.id)}
-                    categoryEmoji={getCategoryEmoji(snippet.category)}
+                    categoryIcon={getCategoryIcon(getCategoryEmoji(snippet.category), snippet.category, "text-gray-400 dark:text-gray-500", 18)}
                   />
                 ))
               ) : (
@@ -691,6 +729,7 @@ export default function QuickReply() {
           setEditCategoryEmoji={setEditCategoryEmoji}
           onAddCategory={handleAddCategory}
           onDeleteCategory={handleDeleteCategory}
+          onReorderCategories={handleReorderCategories}
         />
 
         {/* 10. ABOUT US & GOALS OVERLAY */}

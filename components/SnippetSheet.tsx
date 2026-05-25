@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Check } from '@phosphor-icons/react';
+import { getCategoryIcon } from '../lib/icons';
 import { Snippet, Category } from '../lib/types';
 
 interface SnippetSheetProps {
@@ -91,13 +92,21 @@ export function SnippetSheet({
                     key={category.name}
                     type="button"
                     onClick={() => setFormCategory(category.name)}
-                    className={`px-4 py-2 rounded-full border text-[13px] font-bold transition-colors ${
+                    className={`group/cat-btn flex items-center gap-1.5 px-4 py-2 rounded-full border text-[13px] font-bold transition-colors ${
                       isSelected
                         ? 'bg-[#FF4D3D] border-[#FF4D3D] text-white shadow-md shadow-coral-400/20'
                         : 'border-[#E5E7EB] dark:border-[#334155] text-[#4B5563] dark:text-[#D1D5DB] bg-white dark:bg-[#0F172A] hover:bg-gray-50 dark:hover:bg-[#334155] shadow-sm'
                     }`}
                   >
-                    {category.emoji} {category.name}
+                    {getCategoryIcon(
+                      category.emoji,
+                      category.name,
+                      isSelected 
+                        ? "text-white" 
+                        : "text-gray-400 dark:text-gray-500 group-hover/cat-btn:text-[#FF4D3D] transition-colors duration-200",
+                      16
+                    )}
+                    <span>{category.name}</span>
                   </button>
                 );
               })}

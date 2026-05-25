@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, LinkedinLogo, DownloadSimple, UploadSimple, Link, CaretRight } from '@phosphor-icons/react';
+import { X, LinkedinLogo, DownloadSimple, UploadSimple, Link, CaretRight, Tag } from '@phosphor-icons/react';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -130,17 +130,17 @@ export function SettingsPanel({
                 </h3>
                 <button
                   onClick={onOpenCategoryManager}
-                  className="w-full flex items-center justify-between p-4 bg-white dark:bg-[#1E293B] border border-[#EEEDF2] dark:border-[#334155] rounded-xl hover:bg-gray-50 dark:hover:bg-[#0F172A] active:scale-[0.98] transition-all shadow-sm"
+                  className="group w-full flex items-center justify-between p-4 bg-white dark:bg-[#1E293B] border border-[#EEEDF2] dark:border-[#334155] rounded-xl hover:bg-gray-50 dark:hover:bg-[#0F172A] active:scale-[0.98] transition-all shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-[#0F172A] flex items-center justify-center text-lg shadow-sm border border-gray-100 dark:border-[#1F2937]">
-                      🏷️
+                    <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-[#0F172A] flex items-center justify-center shadow-sm border border-gray-100 dark:border-[#1F2937]">
+                      <Tag weight="bold" size={16} className="text-[#FF4D3D] transition-transform duration-300 group-hover:rotate-12" />
                     </div>
                     <span className="font-extrabold text-[#1F2937] dark:text-[#F3F4F6] text-[15px]">
-                      Manage Categories
+                      Customize Categories
                     </span>
                   </div>
-                  <CaretRight weight="bold" size={20} className="text-gray-400" />
+                  <CaretRight weight="bold" size={20} className="text-gray-400 transform transition-transform duration-300 group-hover:translate-x-1" />
                 </button>
               </section>
             </div>

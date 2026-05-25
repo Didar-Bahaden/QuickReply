@@ -12,7 +12,7 @@ interface SnippetCardProps {
   onShare: (e: React.MouseEvent) => void;
   onEdit: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
-  categoryEmoji: string;
+  categoryIcon?: React.ReactNode;
 }
 
 export function SnippetCard({
@@ -25,7 +25,7 @@ export function SnippetCard({
   onShare,
   onEdit,
   onDelete,
-  categoryEmoji
+  categoryIcon
 }: SnippetCardProps) {
   const hasVariables = /\{[^}]+\}/.test(snippet.body);
 
@@ -43,7 +43,9 @@ export function SnippetCard({
     >
       <div className="flex justify-between items-center mb-2 shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-[20px]">{categoryEmoji}</span>
+          <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 flex items-center justify-center shrink-0 shadow-sm text-gray-400">
+            {categoryIcon}
+          </div>
           <h3 className="text-[16px] font-bold text-[#1F2937] dark:text-[#F3F4F6] m-0 leading-tight">
             {snippet.title}
           </h3>

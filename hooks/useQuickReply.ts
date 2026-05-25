@@ -461,7 +461,9 @@ export function useQuickReply() {
       return next.length === 0 ? ['All'] : next;
     });
   };
-
+  const handleReorderCategories = (newCategories: Category[]) => {
+    setCategories(newCategories);
+  };
   return {
     snippets,
     categories,
@@ -509,6 +511,7 @@ export function useQuickReply() {
     getCategoryEmoji,
     handleAddCategory,
     handleDeleteCategory,
+    handleReorderCategories,
     sortBy,
     setSortBy,
     isVariableModalOpen,
